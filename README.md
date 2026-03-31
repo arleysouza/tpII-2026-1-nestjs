@@ -28,7 +28,7 @@ Em outras palavras, `src/users/users.schema.ts` não cria a tabela sozinho. Ele 
 ### Arquivos do módulo de usuários
 
 - `src/users/users.schema.ts`
-  Define o esquema da tabela `users` no Drizzle. Aqui ficam o nome da tabela, os nomes das colunas, seus tipos e restrições básicas, como `notNull()`. Neste mesmo arquivo também ficam os tipos `User` e `NewUser`, inferidos a partir do schema.
+  Define o esquema da tabela `users` no Drizzle. Aqui ficam o nome da tabela, os nomes das colunas, seus tipos e restrições básicas, como `notNull()`.
 
 - `src/users/dto/create-user.dto.ts`
   Define o formato esperado para criar um usuário. Também concentra as validações da entrada, como obrigatoriedade do nome, tamanho mínimo e formato de e-mail.
@@ -71,6 +71,94 @@ Quando uma requisição chega em `POST /api/users`, o fluxo principal é este:
 4. `database.service.ts` entrega a conexão com o banco.
 5. O Drizzle usa `users.schema.ts` para montar o `INSERT` na tabela `users`.
 
+## Diagramas UML das requisições HTTP
+
+Os diagramas abaixo representam, em sequência, como a requisição HTTP atravessa as camadas da aplicação.
+
+### 1. Criação de usuário (`POST /api/users`)
+
+```mermaid
+sequenceDiagram
+    actor Navegador
+    participant Controller as UsersController
+    participant Pipe as ValidationPipe
+    participant Service as UsersService
+    participant DB as DatabaseService
+    participant PG as PostgreSQL
+
+    Navegador->>Controller: POST /api/users\n{name, email}
+    Controller->>Pipe: Validar body com CreateUserDto
+    Pipe-->>Controller: DTO válido
+    Controller->>Service: create(createUserDto)
+    Service->>DB: db.insert(users).values(...)
+    DB->>PG: INSERT INTO users ...
+    PG-->>DB: usuário criado
+    DB-->>Service: registro inserido
+    Service-->>Controller: usuário criado
+    Controller-->>Navegador: 201 Created + JSON
+```
+
+### 2. Consulta de usuários (`GET /api/users` e `GET /api/users/:id`)
+
+```mermaid
+sequenceDiagram
+    actor Navegador
+    participant Controller as UsersController
+    participant Service as UsersService
+    participant DB as DatabaseService
+    participant PG as PostgreSQL
+
+    Navegador->>Controller: GET /api/users
+    Controller->>Service: findAll()
+    Service->>DB: db.select().from(users)
+    DB->>PG: SELECT * FROM users
+    PG-->>DB: lista de usuários
+    DB-->>Service: resultado da consulta
+    Service-->>Controller: usuários encontrados
+    Controller-->>Navegador: 200 OK + JSON
+
+    Navegador->>Controller: GET /api/users/:id
+    Controller->>Service: findOne(id)
+    Service->>DB: db.select().from(users).where(...)
+    DB->>PG: SELECT ... WHERE id_user = ?
+    PG-->>DB: usuário ou vazio
+    DB-->>Service: resultado
+    Service-->>Controller: usuário ou NotFoundException
+    Controller-->>Navegador: 200 OK ou 404 Not Found
+```
+
+### 3. Atualização e remoção (`PUT /api/users/:id` e `DELETE /api/users/:id`)
+
+```mermaid
+sequenceDiagram
+    actor Navegador
+    participant Controller as UsersController
+    participant Pipe as ValidationPipe
+    participant Service as UsersService
+    participant DB as DatabaseService
+    participant PG as PostgreSQL
+
+    Navegador->>Controller: PUT /api/users/:id\n{name, email}
+    Controller->>Pipe: Validar body com UpdateUserDto
+    Pipe-->>Controller: DTO válido
+    Controller->>Service: update(id, updateUserDto)
+    Service->>DB: db.update(users).set(...).where(...)
+    DB->>PG: UPDATE users SET ... WHERE id_user = ?
+    PG-->>DB: usuário atualizado
+    DB-->>Service: registro atualizado
+    Service-->>Controller: usuário atualizado
+    Controller-->>Navegador: 200 OK + JSON
+
+    Navegador->>Controller: DELETE /api/users/:id
+    Controller->>Service: remove(id)
+    Service->>DB: db.delete(users).where(...)
+    DB->>PG: DELETE FROM users WHERE id_user = ?
+    PG-->>DB: linhas removidas
+    DB-->>Service: confirmação
+    Service-->>Controller: mensagem de sucesso
+    Controller-->>Navegador: 200 OK + JSON
+```
+
 ## Requisitos
 
 - Node.js
@@ -97,8 +185,6 @@ DB_PASSWORD=123
 DB_NAME=bdaula
 ```
 
-Se preferir, pode usar apenas `DATABASE_URL` e deixar as demais variáveis vazias.
-
 3. Crie a tabela no PostgreSQL:
 
 ```sql
@@ -112,13 +198,13 @@ CREATE TABLE users (
 ## Execução
 
 ```bash
-npm run start:dev
+npm run dev
 ```
 
 Abra no navegador:
 
 ```text
-http://localhost:3000
+http://localhost:3003
 ```
 
 ## Rotas da API
