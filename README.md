@@ -1,6 +1,6 @@
 # CRUD simples com NestJS, Drizzle e PostgreSQL
 
-Aplicacao web simples para realizar CRUD de usuarios com NestJS no servidor, Drizzle ORM no mapeamento do esquema e PostgreSQL no armazenamento.
+Aplicação web simples para realizar CRUD de usuários com NestJS no servidor, Drizzle ORM no mapeamento do esquema e PostgreSQL no armazenamento.
 
 ## Tabela usada
 
@@ -16,62 +16,62 @@ CREATE TABLE users (
 
 ## Como o projeto organiza essa tabela
 
-Neste projeto, a definicao da tabela aparece em duas camadas diferentes:
+Neste projeto, a definição da tabela aparece em duas camadas diferentes:
 
 - No banco de dados, a tabela precisa existir fisicamente no PostgreSQL.
-- No codigo, o arquivo `users.schema.ts` descreve essa mesma estrutura para o Drizzle ORM.
+- No código, o arquivo `users.schema.ts` descreve essa mesma estrutura para o Drizzle ORM.
 
-Em outras palavras, `src/users/users.schema.ts` nao cria a tabela sozinho. Ele define o esquema que o codigo vai usar para montar consultas com seguranca de tipos. A criacao fisica da tabela continua sendo feita no PostgreSQL com o comando SQL mostrado acima.
+Em outras palavras, `src/users/users.schema.ts` não cria a tabela sozinho. Ele define o esquema que o código vai usar para montar consultas com segurança de tipos. A criação física da tabela continua sendo feita no PostgreSQL com o comando SQL mostrado acima.
 
 ## Significado dos principais arquivos
 
-### Arquivos do modulo de usuarios
+### Arquivos do módulo de usuários
 
 - `src/users/users.schema.ts`
-  Define o esquema da tabela `users` no Drizzle. Aqui ficam o nome da tabela, os nomes das colunas, seus tipos e restricoes basicas, como `notNull()`.
+  Define o esquema da tabela `users` no Drizzle. Aqui ficam o nome da tabela, os nomes das colunas, seus tipos e restrições básicas, como `notNull()`.
 
 - `src/users/user.entity.ts`
-  Neste projeto, esse arquivo funciona como um ponto de reexportacao. Ele reaproveita o schema e os tipos `User` e `NewUser` definidos em `users.schema.ts`. Apesar do nome `entity`, ele nao representa uma entidade de ORM classica como no TypeORM.
+  Neste projeto, esse arquivo funciona como um ponto de reexportação. Ele reaproveita o schema e os tipos `User` e `NewUser` definidos em `users.schema.ts`. Apesar do nome `entity`, ele não representa uma entidade de ORM clássica como no TypeORM.
 
 - `src/users/dto/create-user.dto.ts`
-  Define o formato esperado para criar um usuario. Tambem concentra as validacoes da entrada, como obrigatoriedade do nome, tamanho minimo e formato de e-mail.
+  Define o formato esperado para criar um usuário. Também concentra as validações da entrada, como obrigatoriedade do nome, tamanho mínimo e formato de e-mail.
 
 - `src/users/dto/update-user.dto.ts`
-  Define o formato esperado para atualizar um usuario. Como a atualizacao e parcial, os campos sao opcionais, mas continuam validados quando enviados.
+  Define o formato esperado para atualizar um usuário. Como a atualização é parcial, os campos são opcionais, mas continuam validados quando enviados.
 
 - `src/users/users.controller.ts`
-  Recebe as requisicoes HTTP da API, como `GET`, `POST`, `PUT` e `DELETE`. O controller extrai parametros e corpo da requisicao e delega a regra de negocio para o service.
+  Recebe as requisições HTTP da API, como `GET`, `POST`, `PUT` e `DELETE`. O controller extrai parâmetros e corpo da requisição e delega a regra de negócio para o service.
 
 - `src/users/users.service.ts`
-  Contem a regra de negocio do CRUD. E o service que usa `DatabaseService` e o schema `users` para inserir, consultar, atualizar e remover registros da tabela.
+  Contém a regra de negócio do CRUD. É o service que usa `DatabaseService` e o schema `users` para inserir, consultar, atualizar e remover registros da tabela.
 
 - `src/users/users.module.ts`
-  Agrupa as partes do dominio de usuarios dentro do NestJS. O modulo registra o `UsersController`, o `UsersService` e importa o `DatabaseModule` para disponibilizar acesso ao banco.
+  Agrupa as partes do domínio de usuários dentro do NestJS. O módulo registra o `UsersController`, o `UsersService` e importa o `DatabaseModule` para disponibilizar acesso ao banco.
 
 ### Arquivos de banco
 
 - `src/database/database.service.ts`
-  Cria a conexao com o PostgreSQL usando as variaveis de ambiente e instancia o Drizzle com o schema do projeto. Esse servico expoe `db`, que e usado pelo `UsersService`.
+  Cria a conexão com o PostgreSQL usando as variáveis de ambiente e instancia o Drizzle com o schema do projeto. Esse serviço expõe `db`, que é usado pelo `UsersService`.
 
 - `src/database/database.module.ts`
-  Torna o `DatabaseService` disponivel para os outros modulos da aplicacao.
+  Torna o `DatabaseService` disponível para os outros módulos da aplicação.
 
-### Arquivos de inicializacao
+### Arquivos de inicialização
 
 - `src/app.module.ts`
-  E o modulo raiz da aplicacao. Ele carrega as configuracoes do `.env`, registra os modulos principais e configura o atendimento de arquivos estaticos.
+  É o módulo raiz da aplicação. Ele carrega as configurações do `.env`, registra os módulos principais e configura o atendimento de arquivos estáticos.
 
 - `src/main.ts`
-  E o ponto de entrada da aplicacao NestJS. Aqui a aplicacao e inicializada, as validacoes globais sao ativadas e o servidor comeca a escutar na porta configurada.
+  É o ponto de entrada da aplicação NestJS. Aqui a aplicação é inicializada, as validações globais são ativadas e o servidor começa a escutar na porta configurada.
 
-## Fluxo da requisicao ate a tabela
+## Fluxo da requisição até a tabela
 
-Quando uma requisicao chega em `POST /api/users`, o fluxo principal e este:
+Quando uma requisição chega em `POST /api/users`, o fluxo principal é este:
 
-1. `users.controller.ts` recebe a requisicao.
+1. `users.controller.ts` recebe a requisição.
 2. O Nest valida o corpo com `create-user.dto.ts`.
-3. `users.service.ts` aplica a logica de criacao.
-4. `database.service.ts` entrega a conexao com o banco.
+3. `users.service.ts` aplica a lógica de criação.
+4. `database.service.ts` entrega a conexão com o banco.
 5. O Drizzle usa `users.schema.ts` para montar o `INSERT` na tabela `users`.
 
 ## Requisitos
@@ -80,9 +80,9 @@ Quando uma requisicao chega em `POST /api/users`, o fluxo principal e este:
 - npm
 - PostgreSQL
 
-## Configuracao
+## Configuração
 
-1. Instale as dependencias:
+1. Instale as dependências:
 
 ```bash
 npm install
@@ -101,7 +101,7 @@ DB_NAME=postgres
 DB_SSL=false
 ```
 
-Se preferir, pode usar apenas `DATABASE_URL` e deixar as demais variaveis vazias.
+Se preferir, pode usar apenas `DATABASE_URL` e deixar as demais variáveis vazias.
 
 3. Crie a tabela no PostgreSQL:
 
@@ -113,7 +113,7 @@ CREATE TABLE users (
 );
 ```
 
-## Execucao
+## Execução
 
 ```bash
 npm run start:dev
