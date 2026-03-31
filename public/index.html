@@ -3,135 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CRUD de Usuarios</title>
-    <style>
-      :root {
-        color-scheme: light;
-        font-family: Arial, Helvetica, sans-serif;
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-
-      body {
-        margin: 0;
-        background: #f4f6f8;
-        color: #1f2933;
-      }
-
-      main {
-        max-width: 900px;
-        margin: 32px auto;
-        padding: 24px;
-      }
-
-      .card {
-        background: #ffffff;
-        border-radius: 12px;
-        padding: 24px;
-        box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
-      }
-
-      h1,
-      h2 {
-        margin-top: 0;
-      }
-
-      form {
-        display: grid;
-        grid-template-columns: 1fr 1fr auto auto;
-        gap: 12px;
-        align-items: end;
-        margin-bottom: 24px;
-      }
-
-      label {
-        display: block;
-        font-size: 14px;
-        font-weight: 600;
-        margin-bottom: 6px;
-      }
-
-      input {
-        width: 100%;
-        padding: 10px 12px;
-        border: 1px solid #cbd2d9;
-        border-radius: 8px;
-        font-size: 14px;
-      }
-
-      button {
-        border: 0;
-        border-radius: 8px;
-        padding: 10px 14px;
-        font-size: 14px;
-        cursor: pointer;
-      }
-
-      .primary {
-        background: #0f766e;
-        color: #ffffff;
-      }
-
-      .secondary {
-        background: #d9e2ec;
-        color: #102a43;
-      }
-
-      .danger {
-        background: #d64545;
-        color: #ffffff;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-      }
-
-      th,
-      td {
-        padding: 12px;
-        border-bottom: 1px solid #e5e7eb;
-        text-align: left;
-      }
-
-      th {
-        background: #f8fafc;
-      }
-
-      .actions {
-        display: flex;
-        gap: 8px;
-      }
-
-      .message {
-        min-height: 20px;
-        margin-bottom: 16px;
-        font-size: 14px;
-        color: #0f766e;
-      }
-
-      .error {
-        color: #b91c1c;
-      }
-
-      @media (max-width: 720px) {
-        form {
-          grid-template-columns: 1fr;
-        }
-
-        .actions {
-          flex-direction: column;
-        }
-      }
-    </style>
+    <title>CRUD de Usuários</title>
+    <link rel="stylesheet" href="/assets/css/main.css" />
   </head>
   <body>
     <main>
       <section class="card">
-        <h1>CRUD de Usuarios</h1>
-        <p>Aplicacao simples usando NestJS e PostgreSQL.</p>
+        <h1>CRUD de Usuários</h1>
+        <p>Aplicação simples usando NestJS e PostgreSQL.</p>
 
         <div id="message" class="message"></div>
 
@@ -150,7 +29,7 @@
           <button id="cancel-button" class="secondary" type="button">Cancelar</button>
         </form>
 
-        <h2>Usuarios cadastrados</h2>
+        <h2>Usuários cadastrados</h2>
 
         <table>
           <thead>
@@ -158,188 +37,13 @@
               <th>ID</th>
               <th>Nome</th>
               <th>Email</th>
-              <th>Acoes</th>
+              <th>Ações</th>
             </tr>
           </thead>
           <tbody id="users-table-body"></tbody>
         </table>
       </section>
     </main>
-
-    <script>
-      const apiUrl = '/api/users';
-      const form = document.getElementById('user-form');
-      const nameInput = document.getElementById('name');
-      const emailInput = document.getElementById('email');
-      const submitButton = document.getElementById('submit-button');
-      const cancelButton = document.getElementById('cancel-button');
-      const tableBody = document.getElementById('users-table-body');
-      const message = document.getElementById('message');
-
-      let editingId = null;
-
-      function setMessage(text, isError = false) {
-        message.textContent = text;
-        message.className = isError ? 'message error' : 'message';
-      }
-
-      function resetForm() {
-        editingId = null;
-        form.reset();
-        submitButton.textContent = 'Salvar';
-      }
-
-      async function request(url, options = {}) {
-        const response = await fetch(url, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          ...options,
-        });
-
-        if (!response.ok) {
-          const data = await response.json().catch(() => ({}));
-          const errorMessage =
-            data.message instanceof Array
-              ? data.message.join(', ')
-              : data.message || 'Erro ao processar a requisicao.';
-          throw new Error(errorMessage);
-        }
-
-        if (response.status === 204) {
-          return null;
-        }
-
-        return response.json();
-      }
-
-      function createActionButton(label, className, onClick) {
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.textContent = label;
-        button.className = className;
-        button.addEventListener('click', onClick);
-        return button;
-      }
-
-      function renderUsers(users) {
-        tableBody.innerHTML = '';
-
-        if (!users.length) {
-          const row = document.createElement('tr');
-          const cell = document.createElement('td');
-          cell.colSpan = 4;
-          cell.textContent = 'Nenhum usuario cadastrado.';
-          row.appendChild(cell);
-          tableBody.appendChild(row);
-          return;
-        }
-
-        users.forEach((user) => {
-          const row = document.createElement('tr');
-
-          const idCell = document.createElement('td');
-          idCell.textContent = user.idUser;
-
-          const nameCell = document.createElement('td');
-          nameCell.textContent = user.name;
-
-          const emailCell = document.createElement('td');
-          emailCell.textContent = user.email || '-';
-
-          const actionsCell = document.createElement('td');
-          const actions = document.createElement('div');
-          actions.className = 'actions';
-
-          actions.appendChild(
-            createActionButton('Editar', 'secondary', () => {
-              editingId = user.idUser;
-              nameInput.value = user.name;
-              emailInput.value = user.email || '';
-              submitButton.textContent = 'Atualizar';
-              setMessage(`Editando o usuario ${user.idUser}.`);
-            }),
-          );
-
-          actions.appendChild(
-            createActionButton('Excluir', 'danger', async () => {
-              const confirmed = window.confirm(
-                `Deseja excluir o usuario ${user.name}?`,
-              );
-
-              if (!confirmed) {
-                return;
-              }
-
-              try {
-                await request(`${apiUrl}/${user.idUser}`, {
-                  method: 'DELETE',
-                });
-                setMessage('Usuario removido com sucesso.');
-                if (editingId === user.idUser) {
-                  resetForm();
-                }
-                await loadUsers();
-              } catch (error) {
-                setMessage(error.message, true);
-              }
-            }),
-          );
-
-          actionsCell.appendChild(actions);
-          row.appendChild(idCell);
-          row.appendChild(nameCell);
-          row.appendChild(emailCell);
-          row.appendChild(actionsCell);
-          tableBody.appendChild(row);
-        });
-      }
-
-      async function loadUsers() {
-        try {
-          const users = await request(apiUrl);
-          renderUsers(users);
-        } catch (error) {
-          setMessage(error.message, true);
-        }
-      }
-
-      form.addEventListener('submit', async (event) => {
-        event.preventDefault();
-
-        const payload = {
-          name: nameInput.value.trim(),
-          email: emailInput.value.trim() || null,
-        };
-
-        try {
-          if (editingId) {
-            await request(`${apiUrl}/${editingId}`, {
-              method: 'PUT',
-              body: JSON.stringify(payload),
-            });
-            setMessage('Usuario atualizado com sucesso.');
-          } else {
-            await request(apiUrl, {
-              method: 'POST',
-              body: JSON.stringify(payload),
-            });
-            setMessage('Usuario cadastrado com sucesso.');
-          }
-
-          resetForm();
-          await loadUsers();
-        } catch (error) {
-          setMessage(error.message, true);
-        }
-      });
-
-      cancelButton.addEventListener('click', () => {
-        resetForm();
-        setMessage('');
-      });
-
-      loadUsers();
-    </script>
+    <script src="/assets/js/main.js"></script>
   </body>
 </html>

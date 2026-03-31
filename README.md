@@ -28,10 +28,7 @@ Em outras palavras, `src/users/users.schema.ts` não cria a tabela sozinho. Ele 
 ### Arquivos do módulo de usuários
 
 - `src/users/users.schema.ts`
-  Define o esquema da tabela `users` no Drizzle. Aqui ficam o nome da tabela, os nomes das colunas, seus tipos e restrições básicas, como `notNull()`.
-
-- `src/users/user.entity.ts`
-  Neste projeto, esse arquivo funciona como um ponto de reexportação. Ele reaproveita o schema e os tipos `User` e `NewUser` definidos em `users.schema.ts`. Apesar do nome `entity`, ele não representa uma entidade de ORM clássica como no TypeORM.
+  Define o esquema da tabela `users` no Drizzle. Aqui ficam o nome da tabela, os nomes das colunas, seus tipos e restrições básicas, como `notNull()`. Neste mesmo arquivo também ficam os tipos `User` e `NewUser`, inferidos a partir do schema.
 
 - `src/users/dto/create-user.dto.ts`
   Define o formato esperado para criar um usuário. Também concentra as validações da entrada, como obrigatoriedade do nome, tamanho mínimo e formato de e-mail.
@@ -92,13 +89,12 @@ npm install
 
 ```env
 PORT=3000
-DATABASE_URL=
+
 DB_HOST=localhost
 DB_PORT=5432
 DB_USER=postgres
-DB_PASSWORD=postgres
-DB_NAME=postgres
-DB_SSL=false
+DB_PASSWORD=123
+DB_NAME=bdaula
 ```
 
 Se preferir, pode usar apenas `DATABASE_URL` e deixar as demais variáveis vazias.
